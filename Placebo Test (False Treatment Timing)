@@ -1,0 +1,9 @@
+df["fake_post"] = (df["time"] >= 3).astype(int)
+df["fake_did"] = df["treated"] * df["fake_post"]
+
+placebo_model = smf.ols(
+    "y ~ treated + fake_post + fake_did + C(unit) + C(time)",
+    data=df
+).fit(cov_type="cluster", cov_kwds={"groups": df["unit"]})
+
+print(placebo_model.summary())
