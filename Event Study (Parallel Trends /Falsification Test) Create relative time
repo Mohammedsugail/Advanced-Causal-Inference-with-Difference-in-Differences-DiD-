@@ -1,0 +1,8 @@
+df["event_time"] = df["time"] - treatment_start
+____'''''____________'''''''________________
+event_model = smf.ols(
+    "y ~ C(event_time)*treated + C(unit) + C(time)",
+    data=df
+).fit(cov_type="cluster", cov_kwds={"groups": df["unit"]})
+
+print(event_model.summary())
