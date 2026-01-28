@@ -1,0 +1,58 @@
+Synthetic Panel Data Generation (NumPy + Pandas)
+
+Design
+
+500 units
+
+10 time periods
+
+5 pre-treatment (t = 0–4)
+
+5 post-treatment (t = 5–9)
+
+50% treated units
+
+Clear treatment effect after t ≥
+import numpy as np
+import pandas as pd
+
+np.random.seed(42)
+
+n_units = 500
+n_periods = 10
+treatment_start = 5
+
+units = np.arange(n_units)
+time = np.arange(n_periods)
+
+df = pd.MultiIndex.from_product([units, time], names=["unit", "time"]).to_frame(index=False)
+
+# Treatment assignment
+df["treated"] = (df["unit"] < n_units / 2).astype(int)
+
+# Post-treatment indicator
+df["post"] = (df["time"] >= treatment_start).astype(int)
+
+# Treatment interaction
+df["did"] = df["treated"] * df["post"]
+
+# Unit and time fixed effects
+unit_fe = np.random.normal(0, 1, n_units)
+time_fe = np.random.normal(0, 0.5, n_periods)
+
+df["unit_fe"] = df["unit"].map(dict(zip(units, unit_fe)))
+df["time_fe"] = df["time"].map(dict(zip(time, time_fe)))
+
+# True treatment effect
+true_effect = 3.0
+
+# Outcome variable
+df["y"] = (
+    5
+    + df["unit_fe"]
+    + df["time_fe"]
+    + true_effect * df["did"]
+    + np.random.normal(0, 1, len(df))
+)
+
+df.head()
